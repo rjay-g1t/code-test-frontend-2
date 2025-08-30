@@ -23,7 +23,10 @@ export const ImageModal: React.FC<ImageModalProps> = ({
   // Debug logging
   console.log('ImageModal - Image data:', image);
   console.log('ImageModal - API_BASE_URL:', API_BASE_URL);
-  console.log('ImageModal - Full image URL:', `${API_BASE_URL}${image.original_path}`);
+  console.log(
+    'ImageModal - Full image URL:',
+    `${API_BASE_URL}${image.original_path}`
+  );
 
   const handleFindSimilar = async () => {
     setLoading(true);
@@ -53,7 +56,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div className="flex items-center justify-center min-h-screen px-4 py-6 sm:px-6 lg:px-8">
         {/* Background overlay */}
         <div
           className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
@@ -61,7 +64,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
         />
 
         {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-5xl mx-auto max-h-[90vh] overflow-y-auto">
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
@@ -78,18 +81,24 @@ export const ImageModal: React.FC<ImageModalProps> = ({
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Image */}
-              <div className="flex justify-center">
+              <div className="flex items-center justify-center bg-gray-50 rounded-lg p-4">
                 <img
                   src={`${API_BASE_URL}${image.original_path}`}
                   alt={image.filename}
-                  className="max-w-full max-h-96 object-contain rounded-lg"
+                  className="max-w-full max-h-96 object-contain rounded-lg shadow-sm"
                   onError={(e) => {
-                    console.error('Image failed to load:', `${API_BASE_URL}${image.original_path}`);
+                    console.error(
+                      'Image failed to load:',
+                      `${API_BASE_URL}${image.original_path}`
+                    );
                     // Fallback to thumbnail if original fails
                     e.currentTarget.src = `${API_BASE_URL}${image.thumbnail_path}`;
                   }}
                   onLoad={() => {
-                    console.log('Image loaded successfully:', `${API_BASE_URL}${image.original_path}`);
+                    console.log(
+                      'Image loaded successfully:',
+                      `${API_BASE_URL}${image.original_path}`
+                    );
                   }}
                 />
               </div>
