@@ -13,18 +13,22 @@ class ApiService {
     try {
       console.log('Uploading files to:', `${API_BASE_URL}/api/upload`);
       console.log('Auth headers:', this.getAuthHeader());
-      
+
       const formData = new FormData();
       files.forEach((file) => {
         formData.append('files', file);
       });
 
-      const response = await axios.post(`${API_BASE_URL}/api/upload`, formData, {
-        headers: {
-          ...this.getAuthHeader(),
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/upload`,
+        formData,
+        {
+          headers: {
+            ...this.getAuthHeader(),
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
       console.log('Upload response:', response.data);
       const data = response.data;
@@ -34,7 +38,9 @@ class ApiService {
       if (axios.isAxiosError(error)) {
         console.error('Upload error status:', error.response?.status);
         console.error('Upload error data:', error.response?.data);
-        throw new Error(`Upload failed: ${error.response?.data?.message || error.message}`);
+        throw new Error(
+          `Upload failed: ${error.response?.data?.message || error.message}`
+        );
       }
       throw error;
     }
@@ -80,7 +86,7 @@ class ApiService {
     try {
       console.log('Searching images with query:', query);
       console.log('Search endpoint:', `${API_BASE_URL}/api/search`);
-      
+
       const response = await axios.post(
         `${API_BASE_URL}/api/search`,
         { query, page, limit },
@@ -101,7 +107,7 @@ class ApiService {
         total: 0,
         page,
         limit,
-        has_more: false
+        has_more: false,
       };
     }
   }
