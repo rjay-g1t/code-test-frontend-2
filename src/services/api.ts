@@ -10,19 +10,34 @@ class ApiService {
   }
 
   async uploadImages(files: File[]): Promise<ImageItem[]> {
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('files', file);
-    });
+    try {
+      console.log('Uploading files to:', `${API_BASE_URL}/api/upload`);
+      console.log('Auth headers:', this.getAuthHeader());
+      
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
 
-    const response = await axios.post(`${API_BASE_URL}/api/upload`, formData, {
-      headers: {
-        ...this.getAuthHeader(),
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+      const response = await axios.post(`${API_BASE_URL}/api/upload`, formData, {
+        headers: {
+          ...this.getAuthHeader(),
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-    return response.data;
+      console.log('Upload response:', response.data);
+      const data = response.data;
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('API Error uploading images:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Upload error status:', error.response?.status);
+        console.error('Upload error data:', error.response?.data);
+        throw new Error(`Upload failed: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
   }
 
   async getImages(page: number = 1, limit: number = 20): Promise<ImageItem[]> {
@@ -62,13 +77,33 @@ class ApiService {
     limit: number;
     has_more: boolean;
   }> {
-    const response = await axios.post(
-      `${API_BASE_URL}/api/search`,
-      { query, page, limit },
-      { headers: this.getAuthHeader() }
-    );
+    try {
+      console.log('Searching images with query:', query);
+      console.log('Search endpoint:', `${API_BASE_URL}/api/search`);
+      
+      const response = await axios.post(
+        `${API_BASE_URL}/api/search`,
+        { query, page, limit },
+        { headers: this.getAuthHeader() }
+      );
 
-    return response.data;
+      console.log('Search response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('API Error searching images:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Search error status:', error.response?.status);
+        console.error('Search error data:', error.response?.data);
+      }
+      // Return empty result on error
+      return {
+        images: [],
+        total: 0,
+        page,
+        limit,
+        has_more: false
+      };
+    }
   }
 
   async findSimilarImages(
