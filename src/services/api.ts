@@ -6,7 +6,27 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 class ApiService {
   private getAuthHeader() {
     const token = localStorage.getItem('sb-access-token');
-    console.log('Getting auth token:', token ? 'Token found' : 'No token');
+    console.log('Getting auth token:', token ? `Token found (${token.substring(0, 20)}...)` : 'No token');
+    
+    if (token) {
+      // Check if token is expired (basic JWT check)
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        console.log('Token expiry:', new Date(payload.exp * 1000));
+        console.log('Current time:', new Date(currentTime * 1000));
+        console.log('Token valid:', payload.exp > currentTime);
+        
+        if (payload.exp <= currentTime) {
+          console.warn('Token has expired, removing from localStorage');
+          localStorage.removeItem('sb-access-token');
+          return {};
+        }
+      } catch (e) {
+        console.error('Error parsing token:', e);
+      }
+    }
+    
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
@@ -22,6 +42,8 @@ class ApiService {
 
       // Handle specific error cases
       if (status === 401) {
+        console.warn('Authentication failed - clearing stored token');
+        localStorage.removeItem('sb-access-token');
         throw new Error('Authentication required. Please log in again.');
       } else if (status === 403) {
         throw new Error('Access forbidden. Please check your permissions.');
@@ -43,11 +65,18 @@ class ApiService {
     try {
       console.log('Uploading files to:', `${API_BASE_URL}/api/upload`);
       console.log('Auth headers:', this.getAuthHeader());
+      console.log(
+        'Files to upload:',
+        files.map((f) => ({ name: f.name, size: f.size, type: f.type }))
+      );
 
       const formData = new FormData();
       files.forEach((file) => {
         formData.append('files', file);
       });
+
+      // Log FormData contents
+      console.log('FormData has', files.length, 'files');
 
       const response = await axios.post(
         `${API_BASE_URL}/api/upload`,
@@ -55,7 +84,7 @@ class ApiService {
         {
           headers: {
             ...this.getAuthHeader(),
-            'Content-Type': 'multipart/form-data',
+            // Don't set Content-Type manually for FormData - let browser set it with boundary
           },
         }
       );
