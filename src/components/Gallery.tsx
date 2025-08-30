@@ -10,7 +10,7 @@ import { apiService } from '../services/api';
 export const Gallery: React.FC = () => {
   const [allImages, setAllImages] = useState<ImageItem[]>([]); // Store all images
   const [filteredImages, setFilteredImages] = useState<ImageItem[]>([]); // Store filtered results
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading state
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
   const [currentView, setCurrentView] = useState<
     'all' | 'search' | 'similar' | 'color'
@@ -21,11 +21,16 @@ export const Gallery: React.FC = () => {
     setLoading(true);
     try {
       const fetchedImages = await apiService.getImages();
-      setAllImages(fetchedImages);
-      setFilteredImages(fetchedImages);
+      // Ensure we always have an array
+      const images = Array.isArray(fetchedImages) ? fetchedImages : [];
+      setAllImages(images);
+      setFilteredImages(images);
       setCurrentView('all');
     } catch (error) {
       console.error('Failed to load images:', error);
+      // Set empty arrays on error to prevent undefined errors
+      setAllImages([]);
+      setFilteredImages([]);
     } finally {
       setLoading(false);
     }
@@ -102,12 +107,16 @@ export const Gallery: React.FC = () => {
   }, [allImages]);
 
   const handleSimilarImages = (similarImages: ImageItem[]) => {
-    setFilteredImages(similarImages);
+    // Ensure we have an array
+    const images = Array.isArray(similarImages) ? similarImages : [];
+    setFilteredImages(images);
     setCurrentView('similar');
   };
 
   const handleColorFilter = (colorImages: ImageItem[]) => {
-    setFilteredImages(colorImages);
+    // Ensure we have an array
+    const images = Array.isArray(colorImages) ? colorImages : [];
+    setFilteredImages(images);
     setCurrentView('color');
   };
 

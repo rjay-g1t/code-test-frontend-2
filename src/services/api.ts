@@ -26,12 +26,29 @@ class ApiService {
   }
 
   async getImages(page: number = 1, limit: number = 20): Promise<ImageItem[]> {
-    const response = await axios.get(`${API_BASE_URL}/api/images`, {
-      params: { page, limit },
-      headers: this.getAuthHeader(),
-    });
+    try {
+      console.log('Fetching images from:', `${API_BASE_URL}/api/images`);
+      console.log('Auth headers:', this.getAuthHeader());
 
-    return response.data;
+      const response = await axios.get(`${API_BASE_URL}/api/images`, {
+        params: { page, limit },
+        headers: this.getAuthHeader(),
+      });
+
+      console.log('API Response:', response.data);
+
+      // Ensure we return an array
+      const data = response.data;
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('API Error fetching images:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Response status:', error.response?.status);
+        console.error('Response data:', error.response?.data);
+      }
+      // Return empty array on error to prevent undefined issues
+      return [];
+    }
   }
 
   async searchImages(
@@ -58,28 +75,40 @@ class ApiService {
     imageId: number,
     limit: number = 10
   ): Promise<ImageItem[]> {
-    const response = await axios.post(
-      `${API_BASE_URL}/api/similar`,
-      { image_id: imageId, limit },
-      { headers: this.getAuthHeader() }
-    );
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/similar`,
+        { image_id: imageId, limit },
+        { headers: this.getAuthHeader() }
+      );
 
-    return response.data;
+      const data = response.data;
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('API Error fetching similar images:', error);
+      return [];
+    }
   }
 
   async filterByColor(color: string, limit: number = 20): Promise<ImageItem[]> {
-    const response = await axios.post(
-      `${API_BASE_URL}/api/filter-by-color`,
-      { color, limit },
-      {
-        headers: {
-          ...this.getAuthHeader(),
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/filter-by-color`,
+        { color, limit },
+        {
+          headers: {
+            ...this.getAuthHeader(),
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-    return response.data;
+      const data = response.data;
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('API Error filtering by color:', error);
+      return [];
+    }
   }
 }
 
