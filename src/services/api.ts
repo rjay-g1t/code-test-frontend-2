@@ -6,7 +6,35 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 class ApiService {
   private getAuthHeader() {
     const token = localStorage.getItem('sb-access-token');
+    console.log('Getting auth token:', token ? 'Token found' : 'No token');
     return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  private handleApiError(error: any, operation: string) {
+    console.error(`API Error during ${operation}:`, error);
+    
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const message = error.response?.data?.message || error.message;
+      
+      console.error(`${operation} error status:`, status);
+      console.error(`${operation} error data:`, error.response?.data);
+      
+      // Handle specific error cases
+      if (status === 401) {
+        throw new Error('Authentication required. Please log in again.');
+      } else if (status === 403) {
+        throw new Error('Access forbidden. Please check your permissions.');
+      } else if (status === 404) {
+        throw new Error('API endpoint not found.');
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        throw new Error('Network error. Please check your connection and try again.');
+      } else {
+        throw new Error(`${operation} failed: ${message}`);
+      }
+    }
+    
+    throw error;
   }
 
   async uploadImages(files: File[]): Promise<ImageItem[]> {
@@ -34,15 +62,8 @@ class ApiService {
       const data = response.data;
       return Array.isArray(data) ? data : [];
     } catch (error) {
-      console.error('API Error uploading images:', error);
-      if (axios.isAxiosError(error)) {
-        console.error('Upload error status:', error.response?.status);
-        console.error('Upload error data:', error.response?.data);
-        throw new Error(
-          `Upload failed: ${error.response?.data?.message || error.message}`
-        );
-      }
-      throw error;
+      this.handleApiError(error, 'Upload');
+      return []; // Fallback return
     }
   }
 
