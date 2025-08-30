@@ -10,7 +10,7 @@ interface ImageModalProps {
   onColorFilter: (images: ImageItem[]) => void;
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 export const ImageModal: React.FC<ImageModalProps> = ({
   image,
@@ -19,6 +19,11 @@ export const ImageModal: React.FC<ImageModalProps> = ({
   onColorFilter,
 }) => {
   const [loading, setLoading] = useState(false);
+
+  // Debug logging
+  console.log('ImageModal - Image data:', image);
+  console.log('ImageModal - API_BASE_URL:', API_BASE_URL);
+  console.log('ImageModal - Full image URL:', `${API_BASE_URL}${image.original_path}`);
 
   const handleFindSimilar = async () => {
     setLoading(true);
@@ -78,6 +83,14 @@ export const ImageModal: React.FC<ImageModalProps> = ({
                   src={`${API_BASE_URL}${image.original_path}`}
                   alt={image.filename}
                   className="max-w-full max-h-96 object-contain rounded-lg"
+                  onError={(e) => {
+                    console.error('Image failed to load:', `${API_BASE_URL}${image.original_path}`);
+                    // Fallback to thumbnail if original fails
+                    e.currentTarget.src = `${API_BASE_URL}${image.thumbnail_path}`;
+                  }}
+                  onLoad={() => {
+                    console.log('Image loaded successfully:', `${API_BASE_URL}${image.original_path}`);
+                  }}
                 />
               </div>
 
