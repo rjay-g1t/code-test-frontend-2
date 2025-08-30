@@ -12,14 +12,14 @@ class ApiService {
 
   private handleApiError(error: any, operation: string) {
     console.error(`API Error during ${operation}:`, error);
-    
+
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
       const message = error.response?.data?.message || error.message;
-      
+
       console.error(`${operation} error status:`, status);
       console.error(`${operation} error data:`, error.response?.data);
-      
+
       // Handle specific error cases
       if (status === 401) {
         throw new Error('Authentication required. Please log in again.');
@@ -28,12 +28,14 @@ class ApiService {
       } else if (status === 404) {
         throw new Error('API endpoint not found.');
       } else if (error.code === 'NETWORK_ERROR' || !error.response) {
-        throw new Error('Network error. Please check your connection and try again.');
+        throw new Error(
+          'Network error. Please check your connection and try again.'
+        );
       } else {
         throw new Error(`${operation} failed: ${message}`);
       }
     }
-    
+
     throw error;
   }
 
